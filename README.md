@@ -36,6 +36,7 @@ server/tests/    unit + API tests
 - [x] Real Rule 36 values with sources (TNCDBR 2019)
 - [x] Per-edge setbacks (front edge marked by user)
 - [x] MongoDB zones and rules, spatial zone lookup ($geoIntersects)
-- [ ] Auth, reports, PDF
+- [x] Auth and saved reports (JWT + MongoDB Atlas)
+- [x] PDF feasibility report export
 - [ ] Next.js client (map)
 - [ ] LLM rule extraction and explanation

@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { z } = require('zod');
 const validate = require('../middleware/validate');
 const { authenticate } = require('../middleware/auth');
-const { runFeasibility } = require('../controllers/feasibilityController');
+const { runFeasibility, exportFeasibilityPdf } = require('../controllers/feasibilityController');
 
 const position = z.tuple([z.number(), z.number()]);
 const ring = z.array(position).min(4).max(500);
@@ -18,9 +18,8 @@ const bodySchema = z.object({
 
 const router = Router();
 
-// authenticate is optional — if token is present, req.user is set and report is saved
-// If no token, the study still runs but nothing is persisted
-router.post('/', (req, res, next) => {
+// authenticate is optional — if token is present, req.user is set
+const optionalAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     return authenticate(req, res, (err) => {
@@ -29,6 +28,9 @@ router.post('/', (req, res, next) => {
     });
   }
   next();
-}, validate(bodySchema), runFeasibility);
+};
+
+router.post('/', optionalAuth, validate(bodySchema), runFeasibility);
+router.post('/pdf', optionalAuth, validate(bodySchema), exportFeasibilityPdf);
 
 module.exports = router;

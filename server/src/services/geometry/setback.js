@@ -75,7 +75,7 @@ function computePerEdgeFootprint(plot, frontEdgeIndex, setbacks) {
     // Line equation: nx * x + ny * y = C
     const C = nx * p1[0] + ny * p1[1] + s;
     lines.push({ nx, ny, C, s, type, edgeIndex: i });
-    edgeDetails.push({ edgeIndex: i, type, setbackM: s });
+    edgeDetails.push({ edgeIndex: i, type, setbackM: s, lengthM: len });
   }
 
   // Intersect adjacent offset lines to obtain new vertices

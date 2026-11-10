@@ -1,5 +1,6 @@
 const Report = require('../models/Report');
 const { AppError } = require('../utils/errors');
+const { generateFeasibilityPdf } = require('../services/pdf/reportPdf');
 
 // GET /api/reports  — list current user's reports (newest first)
 exports.listReports = async (req, res, next) => {
@@ -62,4 +63,29 @@ exports.deleteReport = async (req, res, next) => {
     next(err);
   }
 };
+
+// GET /api/reports/:id/pdf  — stream PDF export of a report
+exports.exportReportPdf = async (req, res, next) => {
+  try {
+    const report = await Report.findById(req.params.id);
+    if (!report) return next(new AppError('NOT_FOUND', 'Report not found', 404));
+
+    if (report.userId.toString() !== req.user.id && req.user.role !== 'admin') {
+      return next(new AppError('FORBIDDEN', 'You do not have access to this report', 403));
+    }
+
+    const filename = `feasibility-report-${report._id}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+
+    await generateFeasibilityPdf(report, req.user, res);
+  } catch (err) {
+    if (!res.headersSent) {
+      next(err);
+    } else {
+      res.end();
+    }
+  }
+};
+
 
