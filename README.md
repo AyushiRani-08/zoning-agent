@@ -33,8 +33,8 @@ server/tests/    unit + API tests
 ## Status
 - [x] Calculator with tests
 - [x] Express endpoint with validation and error handling
-- [ ] Real Rule 36 values with sources
-- [ ] Per-edge setbacks (front edge marked by user)
+- [x] Real Rule 36 values with sources (TNCDBR 2019)
+- [x] Per-edge setbacks (front edge marked by user)
 - [ ] MongoDB zones and rules, zone lookup
 - [ ] Auth, reports, PDF
 - [ ] Next.js client (map)

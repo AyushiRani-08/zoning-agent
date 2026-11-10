@@ -12,6 +12,7 @@ const bodySchema = z.object({
     type: z.literal('Polygon'),
     coordinates: z.array(ring).length(1), // outer ring only; holes not supported yet
   }),
+  frontEdgeIndex: z.number().int().nonnegative().optional(),
 });
 
 const router = Router();

@@ -2,7 +2,7 @@
 // Pure functions: no LLM, no database, no HTTP. Rules are passed in.
 
 const turf = require('@turf/turf');
-
+const { computePerEdgeFootprint } = require('../geometry/setback');
 
 const MIN_USEFUL_FOOTPRINT_SQM = 200; // tune with your mentor
 
@@ -22,7 +22,7 @@ function validatePlot(plot) {
   }
 }
 
-function runStudy(plot, intendedUse, rules) {
+function runStudy(plot, intendedUse, rules, options = {}) {
   validatePlot(plot);
   const plotFeature = turf.polygon(plot.coordinates);
   const plotAreaSqM = turf.area(plotFeature);
@@ -32,15 +32,34 @@ function runStudy(plot, intendedUse, rules) {
   if (rules.permittedUses.includes(intendedUse)) useStatus = 'permitted';
   else if (rules.conditionalUses.includes(intendedUse)) useStatus = 'conditional';
 
-  // 2. Buildable footprint. Option B (uniform inward buffer using the largest
-  //    setback) is a conservative first version. Per-edge setbacks come later.
-  const maxSetback = Math.max(rules.setbacks.front, rules.setbacks.side, rules.setbacks.rear);
-  const shrunk = turf.buffer(plotFeature, -maxSetback, { units: 'meters' });
-  const footprintAreaSqM = shrunk ? turf.area(shrunk) : 0;
+  // 2. Buildable footprint calculation
+  let footprintAreaSqM = 0;
+  let footprintPolygon = null;
+  let method = 'uniform inward buffer (largest setback)';
+  let edgeBreakdown = null;
+
+  if (typeof options.frontEdgeIndex === 'number') {
+    const res = computePerEdgeFootprint(plot, options.frontEdgeIndex, rules.setbacks);
+    if (res) {
+      footprintAreaSqM = res.area;
+      footprintPolygon = res.polygon;
+      edgeBreakdown = res.edges;
+    }
+    method = `per-edge setbacks (front: ${rules.setbacks.front}m, rear: ${rules.setbacks.rear}m, side: ${rules.setbacks.side}m)`;
+  } else {
+    // Option B fallback: uniform inward buffer using largest setback
+    const maxSetback = Math.max(rules.setbacks.front, rules.setbacks.side, rules.setbacks.rear);
+    const shrunk = turf.buffer(plotFeature, -maxSetback, { units: 'meters' });
+    footprintAreaSqM = shrunk ? turf.area(shrunk) : 0;
+    footprintPolygon = shrunk;
+    method = 'uniform inward buffer (largest setback)';
+  }
 
   // 3. Limits
   const maxFloorAreaSqM = rules.far * plotAreaSqM;
-  const coverageCapSqM = (rules.groundCoveragePct / 100) * plotAreaSqM;
+  const coverageCapSqM = rules.groundCoveragePct
+    ? (rules.groundCoveragePct / 100) * plotAreaSqM
+    : footprintAreaSqM;
   const maxFootprintSqM = Math.min(footprintAreaSqM, coverageCapSqM);
   const estFloors = maxFootprintSqM > 0 ? maxFloorAreaSqM / maxFootprintSqM : 0;
 
@@ -71,7 +90,9 @@ function runStudy(plot, intendedUse, rules) {
     maxFootprintSqM: round(maxFootprintSqM),
     maxFloorAreaSqM: round(maxFloorAreaSqM),
     estimatedFloors: round(estFloors),
-    method: 'uniform inward buffer (largest setback)',
+    method,
+    edgeBreakdown: edgeBreakdown || undefined,
+    buildableFootprint: footprintPolygon ? footprintPolygon.geometry : null,
     rulesSource: rules.source,
   };
 }

@@ -41,7 +41,7 @@ Status values: **Active** (in use), **To verify** (in use but needs a source che
 
 | ID | Assumption | Why | If wrong, impact | Status |
 |---|---|---|---|---|
-| A6 | The governing text for industrial parameters is **Rule 36 (Planning Parameters of Industries)** of TNCDBR 2019 as amended. Warehouses are assumed to fall under it. | Rule 36 holds industrial FSI, setback and road-width tables. | If warehouses are covered by a different rule, change the source rule and values. | **To verify** |
+| A6 | The governing text for industrial parameters is **Rule 36 (Planning Parameters of Industries)** of TNCDBR 2019 (Page 47). Warehouses are verified permitted in Industrial Zone via Rule 33 & Annexure XVIII cl. 1(iv) & cl. 1(vi). | Rule 36 holds industrial FSI, setback (front 6m, side 3m, rear 2m), height (18.3m), and road-width (7m) tables. | None; verified from official TNCDBR 2019 gazette copy. | Confirmed |
 | A7 | The base 2019 rules are modified by later gazette amendments. Amendments touching **Rule 36, Rule 2 definitions, Annexure IV (parking) and Annexure XXVII (industrial self-certification)** override the base text. | These are the parts the calculator relies on. | Rule values and their source references change. | **To verify** |
 | A8 | G.O. (Ms) No. 194 of 26 October 2026 is treated as a real amendment, but the only source seen so far is a secondary explainer. The **gazette copy must be read** before its values are used. | Secondary sources can be wrong. | Industrial table values. | **To verify** |
 | A9 | Each rule value is stored with its **source** (document, rule number, page) and an **effective date**. A value without a source is not used. | Traceability and the ability to reproduce old reports. | None; this is a design rule. | Active |
@@ -55,12 +55,12 @@ Status values: **Active** (in use), **To verify** (in use but needs a source che
 |---|---|---|---|---|
 | A13 | Plot input is a **GeoJSON polygon** in WGS84, coordinates as **[longitude, latitude]**. Survey number and address lookup are out of scope. | Simplest reliable input. | Add lookup services later. | Active |
 | A14 | The first calculator version applies the **largest setback uniformly** to all sides (conservative). | Easy to verify by hand and never over-estimates buildable area. | Buildable area is understated for plots with smaller side setbacks. | Active |
-| A15 | The next version applies **front, side and rear setbacks per edge**, with the **front edge marked by the user**. | The system cannot know which side faces the road. | Needs a map interaction and edge-offset logic. | Active |
+| A15 | Applies **front (6m), rear (2m) and side (3m) setbacks per edge**, with the **front edge marked by the user** (or falls back to uniform 6m if unspecified). | The system cannot know which side faces the road; per-edge geometry accurately reflects usable footprint. | Implemented via `computePerEdgeFootprint` with local metric projection. | Confirmed |
 | A16 | Maximum floor area = **FSI x plot area**. Maximum footprint = the smaller of the setback footprint and the ground-coverage cap (if the rule gives one). | Standard definition used in the rules. | Formula changes if the rule defines exclusions from FSI. | Active |
 | A17 | Area is measured with **Turf.js** (geodesic). Results are cross-checked against QGIS on sample plots. | Keeps the stack in JavaScript. | Switch to projected-CRS calculation if differences are material. | Active |
 | A18 | A buildable footprint under **200 sq m** is treated as "not useful" for a warehouse. | Placeholder threshold. | Tune the constant. | **To verify** |
 | A19 | Verdicts are: `feasible`, `conditionally_feasible`, `not_feasible`, and `cannot_assess` (outside coverage or rules missing). Missing data never produces a guess. | Safety and honesty. | None. | Active |
-| A20 | Placeholder rule values in `feasibility.js` (FAR 1.5, coverage 60%, setbacks 6/3/3 m) are **not real**. They are replaced with Rule 36 values with sources before any demo. | The code needed numbers to run. | Wrong results if left in. | Active |
+| A20 | Statutory rule values are sourced directly from TNCDBR 2019 Rule 36 (p. 47): FSI 1.50, min road width 7.0m, max height 18.30m, setbacks front 6.0m, side 3.0m, rear 2.0m. (Uniform buffer applies 6.0m). | Replaced placeholders in pilotRules.js with verified statutory values from TNCDBR 2019 gazette copy. | None. | Confirmed |
 
 ### 2.4 Technology
 
@@ -109,10 +109,10 @@ Status values: **Active** (in use), **To verify** (in use but needs a source che
 
 ## 4. Items that must be verified before they are relied on
 
-1. Download TNCDBR 2019 and the amendments listed on the official Tamil Nadu planning portal; read the gazette copies, not summaries (A6, A7, A8).
-2. Confirm whether warehouses are covered by Rule 36 or another rule (A6).
-3. Read Rule 36's tables and record: permitted use, FSI, front, side and rear setbacks, ground coverage if given, minimum road width, and maximum height, each with rule number and page (A9, A20).
-4. Check whether any value depends on **plot size or road width** (A4).
+1. [VERIFIED] Download TNCDBR 2019 and read the gazette copy (G.O.(Ms) No.18 dated 04.02.2019) (A6, A7).
+2. [VERIFIED] Confirm whether warehouses are covered by Rule 36 or another rule: Warehouses permitted in Industrial Zone via Rule 33 & Annexure XVIII cl. 1(iv) & cl. 1(vi); parameters governed by Rule 36 (A6).
+3. [VERIFIED] Read Rule 36's tables and record statutory values: FSI 1.50, min road width 7.0m, max height 18.30m, front setback 6.0m, side setback 3.0m, rear setback 2.0m (Page 47) (A9, A20).
+4. Check whether any value depends on **plot size or road width** (A4). (Rule 36 notes road width min 7m; front setback varies for cottage industries but is fixed 6.0m for Green/Orange).
 5. Get the master plan or zoning map for the chosen area and confirm it is the current one (A11).
 6. Cross-check three plot areas against QGIS (A17).
 
@@ -136,5 +136,7 @@ These do not block work, but a reply would change an assumption.
 | Date | ID | Change | Reason | Decided by |
 |---|---|---|---|---|
 | 10 Nov 2026 | All | Initial version | Mentor unreachable; proceeding on documented assumptions | Author |
+| 10 Nov 2026 | A6, A20 | Confirmed Rule 36 parameters & land use legality from official TNCDBR 2019 gazette copy; updated pilotRules.js (rear setback set to statutory 2.0m, road width 7m, height 18.3m, parking norms added) | Official TNCDBR 2019 gazette provided | Author |
+| 10 Nov 2026 | A15 | Implemented per-edge setbacks (`setback.js` with local metric projection & line intersection); updated `calculator.js`, API controller, and Zod schema with unit tests | Implemented feature | Author |
 
 When an assumption changes, mark the old row **Changed**, add the new one, and add a line here.
