@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { z } = require('zod');
 const validate = require('../middleware/validate');
+const { authenticate } = require('../middleware/auth');
 const { runFeasibility } = require('../controllers/feasibilityController');
 
 const position = z.tuple([z.number(), z.number()]);
@@ -16,5 +17,18 @@ const bodySchema = z.object({
 });
 
 const router = Router();
-router.post('/', validate(bodySchema), runFeasibility);
+
+// authenticate is optional — if token is present, req.user is set and report is saved
+// If no token, the study still runs but nothing is persisted
+router.post('/', (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authenticate(req, res, (err) => {
+      if (err) return next(); // token invalid → still allow unauthenticated run
+      next();
+    });
+  }
+  next();
+}, validate(bodySchema), runFeasibility);
+
 module.exports = router;
