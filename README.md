@@ -35,7 +35,7 @@ server/tests/    unit + API tests
 - [x] Express endpoint with validation and error handling
 - [x] Real Rule 36 values with sources (TNCDBR 2019)
 - [x] Per-edge setbacks (front edge marked by user)
-- [ ] MongoDB zones and rules, zone lookup
+- [x] MongoDB zones and rules, spatial zone lookup ($geoIntersects)
 - [ ] Auth, reports, PDF
 - [ ] Next.js client (map)
 - [ ] LLM rule extraction and explanation
