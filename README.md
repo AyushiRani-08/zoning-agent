@@ -19,15 +19,28 @@ curl -X POST http://localhost:4000/api/feasibility \
 ```
 Coordinates are `[longitude, latitude]` and the ring must be closed.
 
+## Run the client (Next.js Map Studio)
+```bash
+cd client
+npm install
+npm run dev        # http://localhost:3000
+```
+
 ## Structure
 ```
+client/              # Next.js 14 App Router + Tailwind CSS + Leaflet GIS
+  app/               # / (Map Studio), /reports (Dashboard), /login, /register
+  components/        # MapView, LeafletMap, StudyControls, ResultCard, VerdictBadge
+  lib/               # api client, auth context
 server/src/
-  routes/        HTTP routes + Zod request schemas
-  controllers/   thin HTTP handlers
-  middleware/    validation, error handling
+  routes/            # HTTP routes + Zod request schemas
+  controllers/       # thin HTTP handlers
+  middleware/        # auth, validation, error handling
   services/feasibility/calculator.js   pure calculation logic (no HTTP, no DB)
-  rules/pilotRules.js                  PLACEHOLDER rule values -> replace with real TNCDBR values
-server/tests/    unit + API tests
+  services/geometry/                   setback & coordinate projection
+  services/pdf/reportPdf.js            vector PDF generation (PDFKit)
+  rules/pilotRules.js                  statutory TNCDBR 2019 Rule 36 values
+server/tests/        unit + API + auth + PDF integration tests
 ```
 
 ## Status
@@ -38,5 +51,5 @@ server/tests/    unit + API tests
 - [x] MongoDB zones and rules, spatial zone lookup ($geoIntersects)
 - [x] Auth and saved reports (JWT + MongoDB Atlas)
 - [x] PDF feasibility report export
-- [ ] Next.js client (map)
+- [x] Next.js client (map)
 - [ ] LLM rule extraction and explanation
