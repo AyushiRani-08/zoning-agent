@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Cancel in-progress runs for the same branch/PR to save CI minutes and avoid stale checks
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server-test:
+    name: Backend Tests & Spatial Engine (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    # Industrial isolated ephemeral MongoDB service container
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })' --quiet"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      PORT: 4000
+      MONGODB_URI: mongodb://localhost:27017/zoning-test
+      JWT_SECRET: ci-test-secret-at-least-32-characters-for-secure-jwt
+      JWT_EXPIRES_IN: 1d
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install server dependencies (clean reproducible)
+        run: npm ci --prefix server
+
+      - name: Seed GIS Pilot Zones & 2dsphere indexes
+        run: npm run seed --prefix server
+
+      - name: Run complete test suite (Unit, Spatial, Auth, PDF, AI)
+        run: npm test --prefix server
+
+  client-build:
+    name: Frontend Build & Typecheck (Next.js 14)
+    runs-on: ubuntu-latest
+
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install client dependencies (clean reproducible)
+        run: npm ci --prefix client
+
+      - name: Build Next.js Map Studio
+        run: npm run build --prefix client
+
+  security-audit:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Audit Backend Dependencies (Critical Threshold)
+        run: npm audit --prefix server --audit-level=critical
+
+      - name: Audit Frontend Dependencies (Critical Threshold)
+        run: npm audit --prefix client --audit-level=critical
+
