@@ -3,13 +3,16 @@
 Checks a land plot against zoning rules (FSI/FAR, setbacks, permitted uses) and returns a feasibility verdict.
 See `ASSUMPTIONS.md` for the decisions this build rests on.
 
-## Run the server
-```
-cd server
+## Run the application (Full Stack with one command)
+```bash
 npm install
-npm run dev        # http://localhost:4000
-npm test           # 14 tests: calculator + API
+npm run dev        # Starts both Server (port 4000) and Next.js Studio (port 3000)
 ```
+
+Or run individually:
+- Backend Server: `cd server && npm run dev`
+- Frontend Client: `cd client && npm run dev`
+- Full Test Suite: `npm test` (39/39 passing tests)
 
 ## Try it
 ```
@@ -52,4 +55,4 @@ server/tests/        unit + API + auth + PDF integration tests
 - [x] Auth and saved reports (JWT + MongoDB Atlas)
 - [x] PDF feasibility report export
 - [x] Next.js client (map)
-- [ ] LLM rule extraction and explanation
+- [x] LLM rule extraction and explanation (Google Gemini 3.8 Flash)

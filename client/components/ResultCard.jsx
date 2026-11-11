@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import VerdictBadge from './VerdictBadge';
-import { Download, FileText, CheckCircle2, AlertCircle, Building2, Ruler } from 'lucide-react';
+import { Download, FileText, CheckCircle2, AlertCircle, Building2, Ruler, Sparkles, Lightbulb } from 'lucide-react';
 import { feasibilityApi, reportsApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
@@ -10,6 +10,15 @@ export default function ResultCard({ result, requestPayload }) {
   const { token } = useAuth();
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(null);
+
+  const [explanation, setExplanation] = useState(result?.explanation || null);
+  const [explaining, setExplaining] = useState(false);
+  const [explainError, setExplainError] = useState(null);
+
+  useEffect(() => {
+    setExplanation(result?.explanation || null);
+    setExplainError(null);
+  }, [result]);
 
   if (!result) {
     return (
@@ -31,13 +40,26 @@ export default function ResultCard({ result, requestPayload }) {
         // Download saved report from DB
         await reportsApi.downloadPdf(result.reportId, token);
       } else {
-        // Direct on-the-fly download
-        await feasibilityApi.downloadPdf(requestPayload, token);
+        // Direct on-the-fly download (include explanation if present)
+        await feasibilityApi.downloadPdf({ ...requestPayload, explanation }, token);
       }
     } catch (err) {
       setDownloadError(err.message || 'Failed to download PDF report');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleGetExplanation = async () => {
+    setExplaining(true);
+    setExplainError(null);
+    try {
+      const res = await feasibilityApi.explain(requestPayload, token);
+      setExplanation(res.explanation);
+    } catch (err) {
+      setExplainError(err.message || 'Failed to generate AI planning explanation');
+    } finally {
+      setExplaining(false);
     }
   };
 
@@ -169,6 +191,88 @@ export default function ResultCard({ result, requestPayload }) {
             </li>
           ))}
         </ul>
+      </div>
+
+      {/* AI Planning Consultant Advisory Section */}
+      <div className="flex flex-col gap-2 border-t border-slate-100 pt-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+            AI Planning Consultant Insights
+          </span>
+
+          {!explanation && (
+            <button
+              onClick={handleGetExplanation}
+              disabled={explaining}
+              className="flex items-center gap-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 transition-all"
+            >
+              {explaining ? (
+                <>
+                  <div className="w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                  <span>Consulting Gemini...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3 h-3 text-indigo-600" />
+                  <span>Ask Gemini</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+
+        {explainError && (
+          <div className="text-xs bg-red-50 text-red-700 p-2.5 rounded-lg border border-red-200">
+            {explainError}
+          </div>
+        )}
+
+        {explanation && (
+          <div className="bg-gradient-to-br from-indigo-50/70 to-blue-50/50 border border-indigo-100 rounded-xl p-4 flex flex-col gap-3 text-xs animate-fade-in shadow-sm">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700">Executive Analysis</span>
+              <p className="text-slate-800 leading-relaxed mt-0.5 font-medium">
+                {explanation.executiveSummary}
+              </p>
+            </div>
+
+            {explanation.spatialAnalysis && (
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Spatial Breakdown</span>
+                <p className="text-slate-600 leading-relaxed mt-0.5">
+                  {explanation.spatialAnalysis}
+                </p>
+              </div>
+            )}
+
+            {explanation.primaryBottleneck && (
+              <div className="bg-amber-50/90 border border-amber-200 rounded-lg p-2.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">Key Statutory Bottleneck</span>
+                <p className="text-amber-950 font-medium mt-0.5">
+                  {explanation.primaryBottleneck}
+                </p>
+              </div>
+            )}
+
+            {Array.isArray(explanation.actionableAdvice) && explanation.actionableAdvice.length > 0 && (
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1">
+                  <Lightbulb className="w-3 h-3 text-amber-500" />
+                  Actionable Advice for Developer / Architect
+                </span>
+                <ul className="flex flex-col gap-1.5 mt-1.5">
+                  {explanation.actionableAdvice.map((adv, i) => (
+                    <li key={i} className="text-slate-700 flex items-start gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                      <span>{adv}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Provenance note */}

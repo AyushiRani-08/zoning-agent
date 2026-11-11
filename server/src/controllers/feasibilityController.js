@@ -1,6 +1,7 @@
 const { runStudy, validatePlot } = require('../services/feasibility/calculator');
 const { lookupZoneAndRules } = require('../services/zoning/lookup');
 const { generateFeasibilityPdf } = require('../services/pdf/reportPdf');
+const { explainFeasibilityStudy } = require('../services/agent/explainer');
 const Report = require('../models/Report');
 const mongoose = require('mongoose');
 
@@ -33,6 +34,18 @@ exports.runFeasibility = async (req, res, next) => {
       zoneName: zone ? zone.name : undefined,
     };
 
+    // If explanation requested via query or body flag
+    let aiExplanation = null;
+    if (req.query.explain === 'true' || req.body.includeExplanation === true) {
+      aiExplanation = await explainFeasibilityStudy({
+        ...result,
+        plot,
+        intendedUse,
+        frontEdgeIndex: frontEdgeIndex ?? null,
+      });
+      result.explanation = aiExplanation;
+    }
+
     // Save report to DB if the user is authenticated (token is optional on this route)
     if (req.user && mongoose.connection.readyState === 1) {
       try {
@@ -54,6 +67,7 @@ exports.runFeasibility = async (req, res, next) => {
           edgeBreakdown: studyResult.edgeBreakdown,
           buildableFootprint: studyResult.buildableFootprint,
           rulesSource: studyResult.rulesSource,
+          aiExplanation: aiExplanation || undefined,
         });
         result.reportId = saved._id;
       } catch (saveErr) {
@@ -107,3 +121,40 @@ exports.exportFeasibilityPdf = async (req, res, next) => {
     }
   }
 };
+
+// POST /api/feasibility/explain — generate AI planning analysis for a feasibility study
+exports.explainFeasibility = async (req, res, next) => {
+  try {
+    const { plot, intendedUse, frontEdgeIndex } = req.body;
+    validatePlot(plot);
+
+    const { zone, rules, outsideCoverage } = await lookupZoneAndRules(plot);
+
+    if (outsideCoverage || !rules) {
+      return res.status(400).json({
+        error: {
+          code: 'OUTSIDE_COVERAGE',
+          message: 'Plot location is outside mapped pilot coverage area.',
+        },
+      });
+    }
+
+    const studyResult = runStudy(plot, intendedUse, rules, { frontEdgeIndex });
+    const fullResult = {
+      ...studyResult,
+      plot,
+      intendedUse,
+      frontEdgeIndex: frontEdgeIndex ?? null,
+      zoneName: zone ? zone.name : undefined,
+    };
+
+    const explanation = await explainFeasibilityStudy(fullResult);
+    res.json({
+      ...fullResult,
+      explanation,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+

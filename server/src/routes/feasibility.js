@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { z } = require('zod');
 const validate = require('../middleware/validate');
 const { authenticate } = require('../middleware/auth');
-const { runFeasibility, exportFeasibilityPdf } = require('../controllers/feasibilityController');
+const { runFeasibility, exportFeasibilityPdf, explainFeasibility } = require('../controllers/feasibilityController');
 
 const position = z.tuple([z.number(), z.number()]);
 const ring = z.array(position).min(4).max(500);
@@ -32,5 +32,6 @@ const optionalAuth = (req, res, next) => {
 
 router.post('/', optionalAuth, validate(bodySchema), runFeasibility);
 router.post('/pdf', optionalAuth, validate(bodySchema), exportFeasibilityPdf);
+router.post('/explain', optionalAuth, validate(bodySchema), explainFeasibility);
 
 module.exports = router;

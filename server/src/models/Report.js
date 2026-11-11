@@ -46,6 +46,7 @@ const reportSchema = new mongoose.Schema({
   method: String,
   edgeBreakdown: mongoose.Schema.Types.Mixed,
   buildableFootprint: mongoose.Schema.Types.Mixed, // GeoJSON polygon for map rendering
+  aiExplanation: mongoose.Schema.Types.Mixed,      // LLM urban planning analysis
 
   // Provenance
   rulesSource: String,

@@ -51,6 +51,11 @@ const ruleSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  status: {
+    type: String,
+    enum: ['draft', 'active', 'archived'],
+    default: 'active',
+  },
   effectiveDate: {
     type: Date,
     default: () => new Date('2019-02-04'),

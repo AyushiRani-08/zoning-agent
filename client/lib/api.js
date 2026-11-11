@@ -72,6 +72,9 @@ export const feasibilityApi = {
   evaluate: (payload, token) =>
     request('/feasibility', { method: 'POST', body: payload, token }),
 
+  explain: (payload, token) =>
+    request('/feasibility/explain', { method: 'POST', body: payload, token }),
+
   downloadPdf: (payload, token, filename = 'feasibility-report.pdf') =>
     downloadBlob('/feasibility/pdf', filename, { method: 'POST', body: payload, token }),
 };

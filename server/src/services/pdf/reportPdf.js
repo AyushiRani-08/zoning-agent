@@ -325,7 +325,24 @@ function generateFeasibilityPdf(report, user, outputStream) {
 
     y += 10;
 
-    // --- 7. LEGAL PROVENANCE & DISCLAIMER FOOTER ---
+    // --- 7. AI PLANNING CONSULTANT INSIGHTS (IF AVAILABLE) ---
+    const exp = report.aiExplanation || report.explanation;
+    if (exp && exp.executiveSummary) {
+      doc.save();
+      doc.roundedRect(startX, y, pageWidth, 48, 4).fillAndStroke('#f8fafc', '#93c5fd');
+      doc.font('Helvetica-Bold').fontSize(8).fillColor('#1d4ed8')
+         .text('AI PLANNING CONSULTANT ADVISORY (GEMINI)', startX + 10, y + 6);
+      doc.font('Helvetica').fontSize(7.5).fillColor('#1e293b')
+         .text(exp.executiveSummary, startX + 10, y + 18, { width: pageWidth - 20, lineGap: 1 });
+      if (exp.primaryBottleneck) {
+        doc.font('Helvetica-Bold').fontSize(7).fillColor('#b45309')
+           .text(`Key Bottleneck: ${exp.primaryBottleneck}`, startX + 10, y + 36, { width: pageWidth - 20 });
+      }
+      doc.restore();
+      y += 56;
+    }
+
+    // --- 8. LEGAL PROVENANCE & DISCLAIMER FOOTER ---
     const disclaimerY = Math.max(y, 750); // Pin near bottom of A4
     doc.save();
     doc.roundedRect(startX, disclaimerY, pageWidth, 45, 4).fillAndStroke('#f1f5f9', '#cbd5e1');
