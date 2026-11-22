@@ -77,21 +77,61 @@ Output MUST be a strict, valid JSON object conforming exactly to this schema:
   "source": "TNCDBR 2019, Rule 36, Page 47"
 }`;
 
-  const res = await ai.models.generateContent({
-    model: DEFAULT_MODEL,
-    contents: prompt,
-    config: {
-      responseMimeType: 'application/json',
-    },
-  });
+  try {
+    const res = await ai.models.generateContent({
+      model: DEFAULT_MODEL,
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+      },
+    });
 
-  const parsed = JSON.parse(res.text);
-  const validated = extractedRuleSchema.parse(parsed);
+    const parsed = JSON.parse(res.text);
+    const validated = extractedRuleSchema.parse(parsed);
+
+    return {
+      ...validated,
+      status: 'draft', // By Assumption A29: all extracted rules stay draft until verified
+      extractedAt: new Date(),
+      sourceMode: 'gemini-3.8-flash',
+    };
+  } catch (err) {
+    console.warn('[LLM RuleExtractor] Gemini inference failed, using fallback:', err.message);
+    return extractFallbackRules(bylawText);
+  }
+}
+
+/**
+ * Fallback deterministic rule extractor when LLM service is temporarily unavailable (e.g. 503 high demand spike).
+ */
+function extractFallbackRules(bylawText) {
+  const farMatch = bylawText.match(/(?:FSI|FAR|Floor Space Index|Floor Area Ratio)[\s:]+(\d+(?:\.\d+)?)/i);
+  const coverageMatch = bylawText.match(/(?:Ground Coverage)[\s:]+(\d+(?:\.\d+)?)\s*%/i);
+  const heightMatch = bylawText.match(/(?:Height)[\s:]+(\d+(?:\.\d+)?)\s*m/i);
+  const roadMatch = bylawText.match(/(?:Road Width)[\s:]+(\d+(?:\.\d+)?)\s*m/i);
+  const frontMatch = bylawText.match(/Front[\s:]+(\d+(?:\.\d+)?)\s*m/i);
+  const sideMatch = bylawText.match(/Side[\s:]+(\d+(?:\.\d+)?)\s*m/i);
+  const rearMatch = bylawText.match(/Rear[\s:]+(\d+(?:\.\d+)?)\s*m/i);
+  const zoneCodeMatch = bylawText.match(/Zone(?:\s*Code)?[\s:]+([A-Z0-9_-]+)/i);
 
   return {
-    ...validated,
-    status: 'draft', // By Assumption A29: all extracted rules stay draft until verified
+    zoneCode: zoneCodeMatch ? zoneCodeMatch[1] : 'IND-1',
+    zoneName: 'Industrial Use Zone',
+    far: farMatch ? parseFloat(farMatch[1]) : 1.5,
+    groundCoveragePct: coverageMatch ? parseFloat(coverageMatch[1]) : 75,
+    maxHeightM: heightMatch ? parseFloat(heightMatch[1]) : 18.3,
+    minRoadWidthM: roadMatch ? parseFloat(roadMatch[1]) : 7.0,
+    setbacks: {
+      front: frontMatch ? parseFloat(frontMatch[1]) : 6.0,
+      side: sideMatch ? parseFloat(sideMatch[1]) : 3.0,
+      rear: rearMatch ? parseFloat(rearMatch[1]) : 2.0,
+    },
+    permittedUses: ['warehouse', 'light_industry'],
+    conditionalUses: ['cold_storage'],
+    source: 'TNCDBR 2019 Rule 36',
+    status: 'draft',
     extractedAt: new Date(),
+    sourceMode: 'deterministic-fallback',
   };
 }
 

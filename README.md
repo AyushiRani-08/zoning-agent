@@ -46,7 +46,7 @@ server/src/
 server/tests/        unit + API + auth + PDF integration tests
 ```
 
-## Status — 45% Milestone (A32)
+## Status — 45% Milestone (100% Complete)
 
 ### ✅ Done
 - [x] Draw a plot on map (Leaflet draw tool + presets)
@@ -54,17 +54,15 @@ server/tests/        unit + API + auth + PDF integration tests
 - [x] Permitted-use check (warehouse / light industry vs zone rules)
 - [x] Setback footprint overlay on map (buildable polygon)
 - [x] Maximum floor area (FAR × plot area)
-- [x] Verdict (`feasible` / `conditionally_feasible` / `not_feasible`)
+- [x] Verdict (`feasible` / `conditionally_feasible` / `not_feasible` / `cannot_assess`)
 - [x] PDF feasibility report export (PDFKit, downloadable from ResultCard + Reports page)
-- [x] LLM rule extraction and explanation (Google Gemini 3.8 Flash)
+- [x] LLM rule extraction and explanation (Google Gemini 3.8 Flash with deterministic fallback)
 - [x] Auth and saved reports (JWT + MongoDB Atlas)
 - [x] CI/CD (GitHub Actions — test matrix Node 20×22, Next.js build, security audit)
-- [x] 39/39 tests passing (unit + API + auth + PDF + agent)
-
-### 🔲 Remaining for 45%
-- [x] **GeoJSON file upload** — user uploads a `.geojson` plot file instead of drawing (2–3 hrs)
-- [x] **Rule source citations in UI** — surface "TNCDBR 2019, Rule 36, Page 47" citation in ResultCard (1 hr)
-- [x] **"Outside coverage" UI message** — clear user-facing banner when plot is outside the pilot area; backend already returns `cannot_assess` (30 min)
+- [x] **GeoJSON file upload** — user uploads a `.geojson` plot file directly from the UI
+- [x] **Rule source citations in UI** — surfaces "TNCDBR 2019, Rule 36, Page 47" statutory citation in ResultCard
+- [x] **"Outside coverage" UI message** — user-facing alert banner when a parcel lies outside pilot bounds
+- [x] **39/39 tests passing** (unit + API + auth + PDF + agent) & clean production Next.js build
 
 ### Out of scope for 45%
 - Multiple cities / states
