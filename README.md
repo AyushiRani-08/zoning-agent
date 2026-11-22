@@ -46,13 +46,30 @@ server/src/
 server/tests/        unit + API + auth + PDF integration tests
 ```
 
-## Status
-- [x] Calculator with tests
-- [x] Express endpoint with validation and error handling
-- [x] Real Rule 36 values with sources (TNCDBR 2019)
-- [x] Per-edge setbacks (front edge marked by user)
-- [x] MongoDB zones and rules, spatial zone lookup ($geoIntersects)
-- [x] Auth and saved reports (JWT + MongoDB Atlas)
-- [x] PDF feasibility report export
-- [x] Next.js client (map)
+## Status — 45% Milestone (A32)
+
+### ✅ Done
+- [x] Draw a plot on map (Leaflet draw tool + presets)
+- [x] Zone detection (`$geoIntersects` → pilot bounds fallback)
+- [x] Permitted-use check (warehouse / light industry vs zone rules)
+- [x] Setback footprint overlay on map (buildable polygon)
+- [x] Maximum floor area (FAR × plot area)
+- [x] Verdict (`feasible` / `conditionally_feasible` / `not_feasible`)
+- [x] PDF feasibility report export (PDFKit, downloadable from ResultCard + Reports page)
 - [x] LLM rule extraction and explanation (Google Gemini 3.8 Flash)
+- [x] Auth and saved reports (JWT + MongoDB Atlas)
+- [x] CI/CD (GitHub Actions — test matrix Node 20×22, Next.js build, security audit)
+- [x] 39/39 tests passing (unit + API + auth + PDF + agent)
+
+### 🔲 Remaining for 45%
+- [ ] **GeoJSON file upload** — user uploads a `.geojson` plot file instead of drawing (2–3 hrs)
+- [ ] **Rule source citations in UI** — surface "TNCDBR 2019, Rule 36, Page 47" citation in ResultCard (1 hr)
+- [ ] **"Outside coverage" UI message** — clear user-facing banner when plot is outside the pilot area; backend already returns `cannot_assess` (30 min)
+
+### Out of scope for 45%
+- Multiple cities / states
+- Payments and subscriptions
+- Flood, CRZ, protected-area checks
+- Survey number / address lookup
+- Conditional rules (road width, plot size) and parking norms
+- Production hosting, monitoring, backups
