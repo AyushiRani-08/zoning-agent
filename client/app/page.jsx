@@ -6,7 +6,7 @@ import StudyControls from '../components/StudyControls';
 import ResultCard from '../components/ResultCard';
 import { feasibilityApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, MapPinOff } from 'lucide-react';
 
 // Default initial plot: Standard 40m x 50m industrial parcel in Coimbatore SIDCO
 const INITIAL_PLOT = {
@@ -97,6 +97,13 @@ export default function FeasibilityStudioPage() {
           <div className="bg-red-50 border border-red-200 text-red-800 text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-2 shadow-sm animate-fade-in">
             <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
             <span>{error}</span>
+          </div>
+        )}
+
+        {result?.verdict === 'cannot_assess' && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-2 shadow-sm animate-fade-in">
+            <MapPinOff className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span>Plot is outside pilot coverage. Load a preset parcel or draw inside the Coimbatore industrial corridor.</span>
           </div>
         )}
 

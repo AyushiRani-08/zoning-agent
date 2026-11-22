@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, AlertTriangle, XCircle, HelpCircle } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, XCircle, HelpCircle, MapPinOff } from 'lucide-react';
 
 export default function VerdictBadge({ verdict, className = '' }) {
   const configs = {
@@ -20,8 +20,8 @@ export default function VerdictBadge({ verdict, className = '' }) {
     },
     cannot_assess: {
       label: 'Outside Coverage',
-      icon: HelpCircle,
-      badgeClass: 'bg-slate-100 text-slate-700 border-slate-300',
+      icon: MapPinOff,
+      badgeClass: 'bg-amber-50 text-amber-800 border-amber-300',
     },
   };
 

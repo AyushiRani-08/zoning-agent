@@ -64,7 +64,7 @@ server/tests/        unit + API + auth + PDF integration tests
 ### 🔲 Remaining for 45%
 - [x] **GeoJSON file upload** — user uploads a `.geojson` plot file instead of drawing (2–3 hrs)
 - [x] **Rule source citations in UI** — surface "TNCDBR 2019, Rule 36, Page 47" citation in ResultCard (1 hr)
-- [ ] **"Outside coverage" UI message** — clear user-facing banner when plot is outside the pilot area; backend already returns `cannot_assess` (30 min)
+- [x] **"Outside coverage" UI message** — clear user-facing banner when plot is outside the pilot area; backend already returns `cannot_assess` (30 min)
 
 ### Out of scope for 45%
 - Multiple cities / states
