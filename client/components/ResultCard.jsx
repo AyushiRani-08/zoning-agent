@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import VerdictBadge from './VerdictBadge';
-import { Download, FileText, CheckCircle2, AlertCircle, Building2, Ruler, Sparkles, Lightbulb } from 'lucide-react';
+import { Download, FileText, CheckCircle2, AlertCircle, Building2, Ruler, Sparkles, Lightbulb, BookOpen, ExternalLink } from 'lucide-react';
 import { feasibilityApi, reportsApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
@@ -275,10 +275,34 @@ export default function ResultCard({ result, requestPayload }) {
         )}
       </div>
 
-      {/* Provenance note */}
-      <div className="bg-slate-50 text-[10px] text-slate-500 p-2.5 rounded-lg border border-slate-200/60 leading-relaxed">
-        <strong>Statutory Basis:</strong> Tamil Nadu Combined Development and Building Rules, 2019 (TNCDBR-2019), Rule 36.
-        Subject to municipal site verification by LPA.
+      {/* Rule Source Citation */}
+      <div className="flex flex-col gap-2 border-t border-slate-100 pt-3">
+        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+          <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+          Statutory Rule Source
+        </span>
+
+        {result.rulesSource ? (
+          <div className="flex items-start gap-2.5 bg-blue-50/60 border border-blue-100 rounded-lg px-3 py-2.5 animate-fade-in">
+            <BookOpen className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <span className="text-xs font-semibold text-blue-800 leading-tight break-words">
+                {result.rulesSource}
+              </span>
+              <span className="text-[10px] text-blue-600">
+                Zoning Code: {result.zoneCode || 'IND-1'} · {result.zoneName || 'Industrial Use Zone'}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-slate-50 text-[10px] text-slate-500 p-2.5 rounded-lg border border-slate-200/60 leading-relaxed">
+            <strong>Statutory Basis:</strong> Tamil Nadu Combined Development and Building Rules, 2019 (TNCDBR-2019), Rule 36.
+          </div>
+        )}
+
+        <p className="text-[10px] text-slate-400 leading-relaxed">
+          Subject to municipal site verification by the Local Planning Authority (LPA). Values are as encoded in the pilot rule set and may differ from amendments post 2019.
+        </p>
       </div>
     </div>
   );

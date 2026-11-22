@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { PenTool, Layers, Compass, Play, Sparkles } from 'lucide-react';
+import React, { useRef } from 'react';
+import { PenTool, Layers, Compass, Play, Sparkles, Upload, AlertCircle } from 'lucide-react';
 
 const PRESET_PLOTS = [
   {
@@ -55,6 +55,8 @@ export default function StudyControls({
   setIsDrawing,
 }) {
   const edgeCount = plot?.coordinates?.[0]?.length ? plot.coordinates[0].length - 1 : 0;
+  const fileInputRef = useRef(null);
+  const [uploadError, setUploadError] = React.useState(null);
 
   const handlePresetSelect = (e) => {
     const idx = parseInt(e.target.value);
@@ -66,6 +68,79 @@ export default function StudyControls({
     });
     onIntendedUseChange(p.intendedUse);
     onFrontEdgeChange(p.frontEdgeIndex);
+  };
+
+  /**
+   * Extract the first Polygon ring from any GeoJSON shape:
+   *   - Polygon → use directly
+   *   - Feature<Polygon> → unwrap geometry
+   *   - FeatureCollection → take the first Polygon feature
+   *   - GeometryCollection → take the first Polygon geometry
+   */
+  function extractPolygon(geojson) {
+    if (!geojson || typeof geojson !== 'object') return null;
+    const { type } = geojson;
+    if (type === 'Polygon') return geojson;
+    if (type === 'Feature') {
+      if (geojson.geometry?.type === 'Polygon') return geojson.geometry;
+      if (geojson.geometry?.type === 'MultiPolygon') {
+        // Use the first polygon of the MultiPolygon
+        return { type: 'Polygon', coordinates: geojson.geometry.coordinates[0] };
+      }
+    }
+    if (type === 'FeatureCollection') {
+      for (const feat of geojson.features || []) {
+        const poly = extractPolygon(feat);
+        if (poly) return poly;
+      }
+    }
+    if (type === 'GeometryCollection') {
+      for (const geom of geojson.geometries || []) {
+        const poly = extractPolygon({ type: geom.type, coordinates: geom.coordinates });
+        if (poly) return poly;
+      }
+    }
+    if (type === 'MultiPolygon') {
+      return { type: 'Polygon', coordinates: geojson.coordinates[0] };
+    }
+    return null;
+  }
+
+  const handleGeoJsonFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!fileInputRef.current) return;
+    fileInputRef.current.value = ''; // reset so the same file can be re-uploaded
+    if (!file) return;
+    setUploadError(null);
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const json = JSON.parse(evt.target.result);
+        const polygon = extractPolygon(json);
+        if (!polygon) {
+          setUploadError('No Polygon geometry found in this GeoJSON file.');
+          return;
+        }
+        // Ensure ring is closed
+        const ring = polygon.coordinates[0];
+        if (!ring || ring.length < 4) {
+          setUploadError('Polygon ring must have at least 3 distinct vertices.');
+          return;
+        }
+        const first = ring[0];
+        const last = ring[ring.length - 1];
+        const closedRing =
+          first[0] === last[0] && first[1] === last[1]
+            ? ring
+            : [...ring, first];
+        onPlotChange({ type: 'Polygon', coordinates: [closedRing] });
+        onFrontEdgeChange(0); // reset front edge to first edge
+      } catch {
+        setUploadError('Invalid JSON — could not parse GeoJSON file.');
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -105,16 +180,41 @@ export default function StudyControls({
         <button
           type="button"
           onClick={() => setIsDrawing(prev => !prev)}
-          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg border transition-all ${
-            isDrawing
+          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg border transition-all ${isDrawing
               ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
               : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
-          }`}
+            }`}
         >
           <PenTool className="w-3.5 h-3.5" />
           {isDrawing ? 'Click map to draw...' : 'Draw Custom Plot on Map'}
         </button>
+
+        {/* GeoJSON file upload */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".geojson,.json,application/geo+json,application/json"
+          className="hidden"
+          onChange={handleGeoJsonFile}
+        />
+        <button
+          type="button"
+          onClick={() => { setUploadError(null); fileInputRef.current?.click(); }}
+          title="Upload a .geojson file"
+          className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border bg-slate-50 text-slate-700 border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all"
+        >
+          <Upload className="w-3.5 h-3.5" />
+          GeoJSON
+        </button>
       </div>
+
+      {/* GeoJSON upload error */}
+      {uploadError && (
+        <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2.5 rounded-lg animate-fade-in">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          <span>{uploadError}</span>
+        </div>
+      )}
 
       <div className="border-t border-slate-100" />
 
