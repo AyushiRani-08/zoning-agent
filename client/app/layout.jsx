@@ -1,4 +1,5 @@
 import './globals.css';
+import 'leaflet/dist/leaflet.css';
 import { AuthProvider } from '../lib/auth';
 import { ThemeProvider } from '../lib/theme';
 import Navbar from '../components/Navbar';
