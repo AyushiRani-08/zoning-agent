@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import 'leaflet/dist/leaflet.css';
-
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
@@ -14,21 +12,41 @@
   background: #f1f5f9;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
 /* Leaflet container full height */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background-color: #f8fafc;
+  background-color: #e5e7eb;
 }
+
+.dark .leaflet-container {
+  background-color: #1e293b;
+}
+
+/* NOTE: No CSS filter on .dark .leaflet-tile-pane — the invert filter
+   made OSM tiles render pitch-black before tiles load.
+   OSM tiles display in standard light style in both light and dark mode. */
 
 /* Custom leaflet tooltip styling */
 .custom-leaflet-tooltip {

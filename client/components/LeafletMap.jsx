@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 // Pilot Zone Polygons for visual reference on map
 const PILOT_ZONES = [
@@ -63,9 +64,9 @@ export default function LeafletMap({
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // Clean CartoDB Positron tiles
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a>, OpenStreetMap contributors',
+    // Free OpenStreetMap tiles - zero API keys required, zero watermarks
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     }).addTo(map);
 
@@ -284,7 +285,7 @@ export default function LeafletMap({
 
   return (
     <div className="relative w-full h-full min-h-[500px]">
-      <div ref={mapContainerRef} className="w-full h-full rounded-xl overflow-hidden shadow-inner border border-slate-200" />
+      <div ref={mapContainerRef} className="w-full h-full rounded-xl overflow-hidden shadow-inner border border-slate-200 dark:border-slate-800 transition-colors" />
 
       {/* Floating Drawing Control Overlay */}
       {isDrawing && (
@@ -318,25 +319,25 @@ export default function LeafletMap({
       )}
 
       {/* Map Legend */}
-      <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-lg shadow-md border border-slate-200 text-xs flex flex-col gap-1.5">
-        <span className="font-semibold text-slate-800 text-[11px] uppercase tracking-wider">Map Legend</span>
+      <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-lg shadow-md border border-slate-200 dark:border-slate-800 text-xs flex flex-col gap-1.5 transition-colors">
+        <span className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider">Map Legend</span>
         <div className="flex items-center gap-2">
-          <span className="w-3.5 h-2.5 border-2 border-blue-600 bg-blue-100 rounded-sm" />
-          <span className="text-slate-600">Plot Boundary</span>
+          <span className="w-3.5 h-2.5 border-2 border-blue-600 bg-blue-100 dark:bg-blue-950 rounded-sm" />
+          <span className="text-slate-600 dark:text-slate-300">Plot Boundary</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3.5 h-1 bg-orange-600 rounded-sm" />
-          <span className="text-slate-600">Front Road Access Edge</span>
+          <span className="text-slate-600 dark:text-slate-300">Front Road Access Edge</span>
         </div>
         {buildableFootprint && (
           <div className="flex items-center gap-2">
             <span className="w-3.5 h-2.5 border border-emerald-600 bg-emerald-400/50 rounded-sm" />
-            <span className="text-slate-600 font-medium">Buildable Footprint</span>
+            <span className="text-slate-600 dark:text-slate-300 font-medium">Buildable Footprint</span>
           </div>
         )}
         <div className="flex items-center gap-2">
-          <span className="w-3.5 h-2.5 border border-indigo-400 border-dashed bg-indigo-50/50 rounded-sm" />
-          <span className="text-slate-500">IND-1 Industrial Zone</span>
+          <span className="w-3.5 h-2.5 border border-indigo-400 border-dashed bg-indigo-50/50 dark:bg-indigo-950/40 rounded-sm" />
+          <span className="text-slate-500 dark:text-slate-400">IND-1 Industrial Zone</span>
         </div>
       </div>
     </div>

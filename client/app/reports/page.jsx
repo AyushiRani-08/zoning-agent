@@ -75,12 +75,12 @@ export default function ReportsDashboardPage() {
   if (!token) {
     return (
       <div className="flex-1 flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 text-center flex flex-col items-center gap-4 transition-colors">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
             <FolderCheck className="w-6 h-6" />
           </div>
-          <h2 className="text-lg font-bold text-slate-800">Sign in to view saved reports</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Sign in to view saved reports</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Studies you evaluate while logged in are automatically saved to your account and backed up on MongoDB.
           </p>
           <Link
@@ -99,11 +99,11 @@ export default function ReportsDashboardPage() {
     <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <FolderCheck className="w-5 h-5 text-blue-600" />
+          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <FolderCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Saved Feasibility Studies
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Historical assessments, zoning clearance snapshots, and downloadable PDF reports.
           </p>
         </div>
@@ -117,35 +117,35 @@ export default function ReportsDashboardPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-lg">
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs p-3 rounded-lg">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center flex flex-col items-center gap-3">
-          <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs text-slate-500 font-medium">Loading your saved reports...</span>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center flex flex-col items-center gap-3 transition-colors">
+          <div className="w-7 h-7 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Loading your saved reports...</span>
         </div>
       ) : reports.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center flex flex-col items-center gap-3">
-          <FileText className="w-10 h-10 text-slate-300" />
-          <h3 className="text-sm font-bold text-slate-700">No saved reports yet</h3>
-          <p className="text-xs text-slate-400 max-w-sm">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center flex flex-col items-center gap-3 transition-colors">
+          <FileText className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200">No saved reports yet</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 max-w-sm">
             Evaluate a parcel on the Map Studio to automatically save and track your feasibility history.
           </p>
           <Link
             href="/"
-            className="text-xs font-semibold text-blue-600 hover:underline mt-2"
+            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline mt-2"
           >
             Launch Map Studio &rarr;
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition-colors">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-[11px] font-semibold text-slate-500 border-b border-slate-200 uppercase tracking-wider">
+              <thead className="bg-slate-50 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 uppercase tracking-wider">
                 <tr>
                   <th className="py-3 px-4">Ref / Date</th>
                   <th className="py-3 px-4">Intended Use</th>
@@ -156,7 +156,7 @@ export default function ReportsDashboardPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {reports.map((r) => {
                   const dateStr = new Date(r.createdAt).toLocaleDateString('en-IN', {
                     day: 'numeric',
@@ -164,27 +164,27 @@ export default function ReportsDashboardPage() {
                     year: 'numeric',
                   });
                   return (
-                    <tr key={r._id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-medium text-slate-800">
+                    <tr key={r._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-medium text-slate-800 dark:text-slate-200">
                         <div>#{r._id.slice(-6).toUpperCase()}</div>
-                        <div className="text-[10px] text-slate-400 font-sans flex items-center gap-1 mt-0.5">
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-sans flex items-center gap-1 mt-0.5">
                           <Calendar className="w-3 h-3" />
                           <span>{dateStr}</span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-800 capitalize">
+                      <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-100 capitalize">
                         {r.intendedUse.replace('_', ' ')}
                       </td>
-                      <td className="py-3.5 px-4 text-slate-600">
+                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">
                         {r.zoneCode || 'IND-1'}
                       </td>
                       <td className="py-3.5 px-4">
                         <VerdictBadge verdict={r.verdict} />
                       </td>
-                      <td className="py-3.5 px-4 text-slate-700">
+                      <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
                         {r.plotAreaSqM ? `${Math.round(r.plotAreaSqM).toLocaleString()} m²` : '-'}
                       </td>
-                      <td className="py-3.5 px-4 text-slate-700 font-medium">
+                      <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-medium">
                         {r.buildableFootprintSqM ? `${Math.round(r.buildableFootprintSqM).toLocaleString()} m²` : '0 m²'}
                       </td>
                       <td className="py-3.5 px-4 text-right">
@@ -192,7 +192,7 @@ export default function ReportsDashboardPage() {
                           <button
                             onClick={() => handleDownload(r._id)}
                             disabled={downloadingId === r._id}
-                            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-md font-semibold text-[11px] transition-all"
+                            className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-2.5 py-1.5 rounded-md font-semibold text-[11px] transition-all"
                             title="Download PDF Report"
                           >
                             <Download className="w-3 h-3" />
@@ -201,7 +201,7 @@ export default function ReportsDashboardPage() {
 
                           <button
                             onClick={() => handleDelete(r._id)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-all"
                             title="Delete Report"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -217,20 +217,20 @@ export default function ReportsDashboardPage() {
 
           {/* Pagination Controls */}
           {pages > 1 && (
-            <div className="p-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <div className="p-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
               <span>Showing page {page} of {pages} ({total} total studies)</span>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="p-1 rounded border border-slate-200 disabled:opacity-40"
+                  className="p-1 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-40"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setPage(p => Math.min(pages, p + 1))}
                   disabled={page >= pages}
-                  className="p-1 rounded border border-slate-200 disabled:opacity-40"
+                  className="p-1 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-40"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
